@@ -1,18 +1,22 @@
 def calculate_score(job, user):
     score = 0
+    text = job["description"].lower()
 
-    skills = user.skills.split(",")
-    keywords = user.keywords.split(",")
+    skills = [s.strip() for s in user.skills.lower().split(",")]
+    keywords = [k.strip() for k in user.keywords.lower().split(",")]
 
     for s in skills:
-        if s.lower() in job["description"].lower():
-            score += 2
+        if s in text:
+            score += 3  # subir peso
 
     for k in keywords:
-        if k.lower() in job["description"].lower():
+        if k in text:
             score += 1
 
-    if "remote" in job["description"].lower():
+    if "remote" in text:
+        score += 2
+
+    if "freelance" in text:
         score += 2
 
     return score
