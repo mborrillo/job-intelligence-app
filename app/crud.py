@@ -17,3 +17,6 @@ def save_job(db: Session, job_data):
     job = models.Job(**job_data)
     db.add(job)
     db.commit()
+
+def job_exists(db, title, user_id):
+    return db.query(models.Job).filter_by(title=title, user_id=user_id).first()
