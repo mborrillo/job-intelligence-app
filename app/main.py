@@ -4,6 +4,10 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine, Base
 from app import crud, schemas, scraper, matcher, models
 
+from dotenv import load_dotenv
+load_dotenv()from dotenv import load_dotenv
+load_dotenv()
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
