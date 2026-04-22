@@ -51,6 +51,8 @@ def run_scraper(db: Session = Depends(get_db)):
             job_data = job.copy()
             job_data["score"] = score
 
+            if not crud.job_exists(db, job["title"], user.id):
+            job_data["user_id"] = user.id
             crud.save_job(db, job_data)
 
             results.append({
