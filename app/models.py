@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 class User(Base):
@@ -9,6 +10,8 @@ class User(Base):
     skills = Column(Text)
     keywords = Column(Text)
     modality = Column(String)
+
+    jobs = relationship("Job", back_populates="user")
 
 
 class Job(Base):
@@ -21,3 +24,6 @@ class Job(Base):
     source = Column(String)
     url = Column(String)
     score = Column(Integer)
+
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="jobs")
