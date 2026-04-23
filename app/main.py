@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Crear tablas en la base asociada a DATABASE_URL (Neon)
+# Crea tablas si no existen (en Neon)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Job Intelligence App")
@@ -48,21 +48,32 @@ def run_scraper_endpoint(db: Session = Depends(get_db)):
             detail="No hay usuarios configurados. Crea al menos uno antes de ejecutar el scraper.",
         )
 
-    jobs = scraper.scrape_jooble()
+    run = crud.create_run(db, source="jooble")
 
-    saved_jobs = 0
-    for user in users:
-        for job in jobs:
-            if crud.job_exists(db, job["title"], job["url"], user.id):
-                continue
-            score = matcher.calculate_score(job, user)
-            crud.save_job(db, job, user.id, score)
-            saved_jobs += 1
+    try:
+        jobs = scraper.scrape_jooble()
+        if not jobs:
+            crud.finish_run(db, run, status="no_jobs")
+            return {"status": "ok", "saved_jobs": 0, "message": "Scraper sin resultados"}
 
-    return {"status": "ok", "saved_jobs": saved_jobs}
+        saved_jobs = 0
+        for user in users:
+            for job in jobs:
+                if crud.job_exists(db, job["title"], job["url"], user.id, run.id):
+                    continue
+                score = matcher.calculate_score(job, user)
+                crud.save_job(db, job, user.id, score, run.id)
+                saved_jobs += 1
+
+        crud.finish_run(db, run, status="success")
+        return {"status": "ok", "saved_jobs": saved_jobs, "run_id": run.id}
+
+    except Exception:
+        crud.finish_run(db, run, status="failed")
+        raise
 
 
 @app.get("/jobs", response_model=list[schemas.JobRead])
-def list_jobs(db: Session = Depends(get_db)):
-    jobs = crud.get_jobs(db)
+def list_jobs(user_id: int | None = None, db: Session = Depends(get_db)):
+    jobs = crud.get_jobs(db, user_id=user_id)
     return jobs
