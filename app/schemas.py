@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 class UserBase(BaseModel):
     name: str
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None  # <- ahora es str, no EmailStr
     skills: Optional[str] = None
     keywords: Optional[str] = None
 
