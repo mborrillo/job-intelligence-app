@@ -2,7 +2,7 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 psycopg2-binary
-pydantic[email]
+pydantic
 python-dotenv
 requests
 beautifulsoup4
